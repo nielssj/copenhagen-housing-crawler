@@ -11,12 +11,14 @@ var models = require("./data/data_model")(mongoose);
  * Polls one or more housing sites continuously for listings
  */
 
+var POLL_FREQUENCY = 60000; // ms (1 minute)
+
 var profiles = {
     "bpdk": bpdk
 };
 
-var pollLoop = function() {
-    var profile = profiles["bpdk"];
+var poll = function(profile) {
+    console.log("Polling \"" + profile.title + "\" ...");
     exec(profile.curl, function(err, stdout, stderr) {
         if(!err) {
             var entries = profile.apartments(stdout);
@@ -30,7 +32,8 @@ var pollLoop = function() {
                         } else {
                             // Doesn't exist create
                             var obj = profile.scrape(entry);
-                            var apartment = new models.Apartment(obj);
+                            apartment = new models.Apartment(obj);
+                            console.log("New apartment!");
                         }
                         apartment.save(function(err) {
                             if(err) {
@@ -48,4 +51,16 @@ var pollLoop = function() {
     });
 };
 
-db.connect(pollLoop);
+var pollAll = function() {
+    Object.keys(profiles).forEach(function(pk) {
+        var profile = profiles[pk];
+        poll(profile);
+    });
+};
+
+var startPolling = function() {
+    pollAll();
+    setInterval(pollAll, POLL_FREQUENCY);
+};
+
+db.connect(startPolling);
