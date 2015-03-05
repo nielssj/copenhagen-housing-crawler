@@ -1,7 +1,10 @@
 var express = require("express");
 var exec = require("child_process").exec;
 var rss = require("rss");
-var bpdk = require("./crawlers/bpdk");
+var mongoose = require("mongoose");
+
+var db = require("./data/database")(mongoose);
+var models = require("./data/data_model")(mongoose);
 
 /**
  * Created by niels on 2/26/15.
@@ -22,16 +25,14 @@ var bpdk = require("./crawlers/bpdk");
 var app = express();
 
 var profiles = {
-    "bpdk": bpdk
+    "bpdk": require("./crawlers/bpdk")
 };
 
 app.get("/:profid", function(req, res) {
     if(profiles.hasOwnProperty(req.params.profid)) {
         var profile = profiles[req.params.profid];
-        exec(profile.curl, function(err, stdout, stderr) {
+        models.Apartment.find({"_id": { "$regex": "bpdk-.+"}}, function(err, data) {
             if(!err) {
-                var data = profile.scrape(stdout);
-
                 var feed = new rss({
                     title: profile.title,
                     description: profile.description,
@@ -40,20 +41,27 @@ app.get("/:profid", function(req, res) {
                     ttl: 1 // minute (time-to-live)
                 });
 
-                data.forEach(function(item) {
-                    feed.item(item);
+                data.forEach(function(apartment) {
+                    feed.item(apartment.feedItem);
                 });
 
                 res.send(feed.xml());
+            } else {
+                console.log("Failed to execute database query: " + err);
+                res.status(500).send("Internal error");
             }
-        });
+        })
     } else {
         res.status(400).send("Invalid profile ID");
     }
 });
 
-var server = app.listen(8080, function () {
-    var host = server.address().address;
-    var port = server.address().port;
-    console.log('Example app listening at http://%s:%s', host, port)
-});
+var startServer = function() {
+    var server = app.listen(8080, function () {
+        var host = server.address().address;
+        var port = server.address().port;
+        console.log('Example app listening at http://%s:%s', host, port);
+    });
+};
+
+db.connect(startServer());
