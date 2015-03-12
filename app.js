@@ -24,7 +24,7 @@ var models = require("./data/data_model")(mongoose);
 var app = express();
 
 var profiles = {
-    "bpdk": require("./crawlers/bpdk")
+    "bpdk": require("./crawlers/bpdk")()
 };
 
 app.get("/:profid", function(req, res) {
