@@ -1,8 +1,7 @@
-var exec = require("child_process").exec;
 var mongoose = require("mongoose");
 
 var db = require("./data/database")(mongoose);
-var bpdk = require("./crawlers/bpdk");
+var bpdk = require("./crawlers/bpdk")();
 var models = require("./data/data_model")(mongoose);
 
 /**
@@ -19,9 +18,8 @@ var profiles = {
 
 var poll = function(profile) {
     console.log("Polling \"" + profile.title + "\" ...");
-    exec(profile.curl, function(err, stdout, stderr) {
+    profile.apartments(function(err, entries) {
         if(!err) {
-            var entries = profile.apartments(stdout);
             entries.forEach(function(entry) {
                 var uuid = profile.guid(entry);
                 models.Apartment.findOne({ _id: uuid}, function(err, apartment) {
@@ -37,16 +35,16 @@ var poll = function(profile) {
                         }
                         apartment.save(function(err) {
                             if(err) {
-                                console.log("Failed to save apartment: " + err);
+                                console.log("Failed to save apartment to database: " + err);
                             }
                         });
                     } else {
-                        console.log("Error retrieving apartment: " + err);
+                        console.log("Error looking up apartment in database: " + err);
                     }
                 });
             })
         } else {
-            console.log("Retrieval using cURL failed: " + err);
+            console.log("Retrieval of apartments failed: " + err);
         }
     });
 };
