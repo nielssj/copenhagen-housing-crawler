@@ -9,8 +9,6 @@ var models = require("./data/data_model")(mongoose);
  * Created by niels on 2/26/15.
  *
  * TODO:
- *  - Cron-like loop in a separate process that polls continuously and stores results in MongoDB
- *  - Make these endpoints serve content from MongoDB
  *  - More crawlers
  *      - http://www.lejebolig.dk/  (Response HTTP, but otherwise ok API. Use cheerio.js to scrape)
  *      - http://minlejebolig.dk/
