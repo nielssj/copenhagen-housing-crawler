@@ -78,10 +78,9 @@ module.exports = function() {
                     ]
                 },
                 size: size,
-                /* TODO: Scrape some more meta-data
-                 roomCount: Number,
-                 municipality: { type: String, validate: util.strLength(128) },
-                 address: { type: String, validate: util.strLength(512) },*/
+                type: aptm_src.jqt_type.text,
+                municipality: aptm_src.jqt_location.city,
+                address: aptm_src.jqt_location.street,
                 rent: parseInt(rent),
                 source: JSON.stringify(aptm_src)
             };

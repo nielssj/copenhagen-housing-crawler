@@ -41,9 +41,9 @@ module.exports = function (mongoose) {  //passing mongoose object to constructor
         },
         size: Number,
         rent: Number,
-        roomCount: Number,
+        type: { type: String, validate: strLength(128) },
         municipality: { type: String, validate: strLength(128) },
-        address: { type: String, validate: strLength(512) },
+        address: { type: String, validate: strLength(128) },
         source: { type: String, required: true}
     });
     Apartment.pre('validate', true, updateTimeStamps);
